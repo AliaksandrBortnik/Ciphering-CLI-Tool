@@ -1,1 +1,4 @@
-console.log('Simple NodeJS execution test');
+const chalk = require('chalk');
+const text = require('./data');
+
+console.log(chalk.green(text));
