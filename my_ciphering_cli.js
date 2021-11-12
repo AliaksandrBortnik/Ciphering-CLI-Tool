@@ -13,7 +13,9 @@ const alphabetUpperReversed = 'ZYXWVUTSRQPONMLKJIHGFEDCBA'.split('');
 
 const args = getArgs();
 const cipherQueue = (args['-c'] || args['--config']).split('-');
+console.log(cipherQueue);
 validateArgs();
+let text;
 processText();
 
 function getArgs () {
@@ -30,16 +32,6 @@ function getArgs () {
 }
 
 function validateArgs() {
-  // CLI tool should accept 3 options (short alias and full name):
-  // -c, --config: config for ciphers Config is a string with pattern {XY(-)}n, where:
-  // X is a cipher mark:
-  // C is for Caesar cipher (with shift 1)
-  // A is for Atbash cipher
-  // R is for ROT-8 cipher
-  // Y is flag of encoding or decoding (mandatory for Caesar cipher and ROT-8 cipher and should not be passed Atbash cipher)
-  // 1 is for encoding
-  // 0 is for decoding
-
   // Config option is required and should be validated. In case of invalid confing human-friendly error should be printed in stderr and the process should exit with non-zero status code.
   // If any option is duplicated (i.e. bash $ node my_ciphering_cli -c C1-C1-A-R0 -c C0) then human-friendly error should be printed in stderr and the process should exit with non-zero status code.
   // If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
@@ -70,7 +62,9 @@ function processText() {
     const inputFilePath = path.join(__dirname, inputFileName);
 
     fs.readFile(inputFilePath, 'utf-8', (err, content) => {
-      outputResult(content);
+      text = content;
+      applyCiphers()
+      outputResult();
     });
   } else { // If the input file option is missed - use stdin as an input source.
     const rl = readline.createInterface(({
@@ -80,13 +74,27 @@ function processText() {
     }));
 
     rl.question('What text would you like to process?\n', line => {
-      outputResult(line);
+      text = line;
+      applyCiphers()
+      outputResult();
       rl.close();
     });
   }
 }
 
-function outputResult(text) {
+function applyCiphers() {
+  cipherQueue.forEach(cipher => {
+    if (cipher[0] === 'A') {
+      text = processAtbashCipher(text);
+    } else if (cipher[0].startsWith('C')) {
+      text = processROTN(text, 1, cipher[1] === '1')
+    } else if (cipher[0].startsWith('R')) {
+      text = processROTN(text, 8, cipher[1] === '1')
+    }
+  });
+}
+
+function outputResult() {
   if (args.hasOwnProperty('-o') || args.hasOwnProperty('--output')) {
     const outputFileName = args['-o'] || args['--output'];
     const outputFilePath = path.join(__dirname, outputFileName);
@@ -95,26 +103,8 @@ function outputResult(text) {
       console.log('Successfully wrote to the file.')
     });
   } else { // If the output file option is missed - use stdout as an output destination.
-    cipherQueue.forEach(cihper => {
-      if (cipher[0] === 'A') {
-        text = processAtbashCipher(text);
-      } else if (cipher[0].startsWith('C')) {
-        text = processCaesarCipher(text, cipher[1] === '1')
-      } else if (cipher[0].startsWith('R')) {
-        text = processROT8(text, cipher[1] === '1')
-      }
-    });
-
     process.stdout.write(`The result of processing: ${text}\n`);
   }
-}
-
-function processCaesarCipher(text, isEncoding) {
-  return processROTN(text, 1, isEncoding);
-}
-
-function processROT8(text, isEncoding) {
-  return processROTN(text, 8, isEncoding);
 }
 
 function processAtbashCipher(text) {
@@ -132,7 +122,7 @@ function processROTN(text, shiftN, isEncoding = true) {
   const shift = isEncoding ? shiftN : -shiftN;
   return text.split('')
     .map(l => !isEnglishLetter(l) ? l
-      : shiftAlphabetLetter(l === l.toUpperCase() ? alphabetUpper : alphabet, l, shift))
+      : shiftAlphabetLetter((l === l.toUpperCase() ? alphabetUpper : alphabet), l, shift))
     .join('');
 }
 
@@ -141,5 +131,8 @@ function isEnglishLetter(char) {
 }
 
 function shiftAlphabetLetter(alphabet, letter, shift) {
-  return alphabet[(alphabet.indexOf(letter) + shift) % 26]
+  if (shift < 0) {
+    return shiftAlphabetLetter(alphabet, letter, shift + 26);
+  }
+  return alphabet[(alphabet.indexOf(letter) + shift) % 26];
 }
