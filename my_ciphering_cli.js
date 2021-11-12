@@ -1,4 +1,4 @@
-// Ciphering CLI Tool
+// Ciphering CLI Tool. CLI tool that will encode and decode a text by 3 substitution ciphers.
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -21,15 +21,6 @@ input.txt This is secret. Message about "_" symbol!
 output.txt This is secret. Message about "_" symbol!
 */
 
-const allowedFlags = [
-  '-c',
-  '--config',
-  '-i',
-  '--input',
-  '-o',
-  '--output'
-];
-
 function getArgs () {
   const args = {}
   const argv = process.argv.slice(2);
@@ -42,56 +33,90 @@ function getArgs () {
 
   return args;
 }
-const args = getArgs();
-console.log(args);
 
-// Argument validation
-if (process.argv.slice(2).length % 2) {
-  console.error('Wrong number of arguments!');
-  return;
-} else if (Object.keys(args).every(x => allowedFlags.includes(x))) {
-  console.error('Wrong passed argument!');
-  return;
-} else {
-  console.log('All args look good.')
+function validateArgs() {
+  const allowedFlags = [
+    '-c',
+    '--config',
+    '-i',
+    '--input',
+    '-o',
+    '--output'
+  ];
+
+  if (!args.hasOwnProperty('-c') && !args.hasOwnProperty('--config')) {
+    console.error('Config arg is required!');
+    throw Error('Config arg is required!');
+  } else if (process.argv.slice(2).length % 2) {
+    console.error('Wrong number of arguments!');
+    throw Error('Wrong number of arguments!');
+  } else if (Object.keys(args).some(x => !allowedFlags.includes(x))) {
+    console.error('Wrong passed argument!');
+    throw Error('Wrong passed argument!');
+  } else {
+    //console.log('All args look good.')
+  }
 }
 
-// If the input file option is missed - use stdin as an input source.
-// If the output file option is missed - use stdout as an output destination.
-// If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
-// If passed params are fine the output (file or stdout) should contain transformed content of input (file or stdin).
+const args = getArgs();
+validateArgs();
+let textToEncode;
 
-// const rl = readline.createInterface(({
-//     input: process.stdin, // the readable stream to listen to (Required).
-//     output: process.stdout, //  the writable stream to write readline data to (Optional).
-//     terminal: false // pass true if the input and output streams should be treated like a TTY, and have ANSI/VT100 escape codes written to it. Defaults to checking isTTY on the output stream upon instantiation.
-// }));
-//
-// // rl.on('line', line => {
-// //       console.log(line);
-// // })
-//
-// rl.question("What text should we encode? ", function(answer) {
-//     // TODO: Log the answer in a database
-//     console.log("Thank you for your valuable feedback:", answer);
-//
-//     rl.close();
-// });
+if (args.hasOwnProperty('-i') || args.hasOwnProperty('--input')) {
+  const inputFileName = args['-i'] || args['--input'];
+  const inputFilePath = path.join(__dirname, inputFileName);
 
+  fs.readFile(inputFilePath, 'utf-8', (err, content) => {
+    outputResult(content);
+  });
+} else { // If the input file option is missed - use stdin as an input source.
+  const rl = readline.createInterface(({
+    input: process.stdin, // the readable stream to listen to (Required).
+    output: process.stdout, //  the writable stream to write readline data to (Optional).
+    terminal: false // pass true if the input and output streams should be treated like a TTY, and have ANSI/VT100 escape codes written to it. Defaults to checking isTTY on the output stream upon instantiation.
+  }));
 
+  rl.question('What text would you like to process?\n', line => {
+    outputResult(line);
+    rl.close();
+  });
+}
 
-// let hasIflag = false;
-// let input = hasIflag ? ''
-//
-// console.log(inut);
+function outputResult(textToEncode) {
+  if (args.hasOwnProperty('-o') || args.hasOwnProperty('--output')) {
+    const outputFileName = args['-o'] || args['--output'];
+    const outputFilePath = path.join(__dirname, outputFileName);
 
-// Ciphering CLI Tool
-// Implement CLI tool that will encode and decode a text by 3 substitution ciphers:
+    fs.writeFile(outputFilePath, textToEncode, err => {
+      console.log('Successfully wrote to the file.')
+    });
+  } else { // If the output file option is missed - use stdout as an output destination.
+    // TODO: process encode/decode and overwrite textToEncode
+    process.stdout.write(`The result of processing: ${textToEncode}`);
+    process.stdout.write('\n');
+  }
+}
+
 // Caesar cipher
+function processCaesarCipher(isEncoding = true) {
+
+}
+
 // Atbash cipher
+function processAtbashCipher() { // Atbash always symetric encoding <-> decoding
+
+}
+
 // ROT-8 as variation of ROT-13
+function processROT8(isEncoding = true) {
+
+}
+
+
+
+// If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
+
 // CLI tool should accept 3 options (short alias and full name):
-//
 // -c, --config: config for ciphers Config is a string with pattern {XY(-)}n, where:
 // X is a cipher mark:
 // C is for Caesar cipher (with shift 1)
@@ -103,18 +128,12 @@ if (process.argv.slice(2).length % 2) {
 // -i, --input: a path to input file
 // -o, --output: a path to output file
 // For example, config "C1-C1-R0-A" means "encode by Caesar cipher => encode by Caesar cipher => decode by ROT-8 => use Atbash"
-//
-// Details:
-// The task must be solved using only pure Node.js. Any libraries and packages (except nodemon, prettier and its plugins, eslint and its plugins) are prohibited.
+
 // Config option is required and should be validated. In case of invalid confing human-friendly error should be printed in stderr and the process should exit with non-zero status code.
 // If any option is duplicated (i.e. bash $ node my_ciphering_cli -c C1-C1-A-R0 -c C0) then human-friendly error should be printed in stderr and the process should exit with non-zero status code.
-// If the input file option is missed - use stdin as an input source.
-// If the output file option is missed - use stdout as an output destination.
 // If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
 // If passed params are fine the output (file or stdout) should contain transformed content of input (file or stdin).
 // For encoding/decoding use only the English alphabet, all other characters should be kept untouched.
 // Using streams for reading, writing and transformation of text is mandatory.
 // Each cipher is implemented in the form of a transform stream.
 // Streams are piped inside each other according to config (you can use .pipe streams instances method or pipeline)
-// Usage example:
-//
