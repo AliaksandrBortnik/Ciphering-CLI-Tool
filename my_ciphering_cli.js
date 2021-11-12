@@ -1,15 +1,9 @@
 // Using streams for reading, writing and transformation of text is mandatory.
 // Each cipher is implemented in the form of a transform stream.
 // Streams are piped inside each other according to config (you can use .pipe streams instances method or pipeline)
-
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
-
-const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
-const alphabetUpper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-const alphabetReversed = 'zyxwvutsrqponmlkjihgfedcba'.split('');
-const alphabetUpperReversed = 'ZYXWVUTSRQPONMLKJIHGFEDCBA'.split('');
 
 const args = getArgs();
 const cipherQueue = (args['-c'] || args['--config']).split('-');
@@ -35,7 +29,6 @@ function validateArgs() {
   // Config option is required and should be validated. In case of invalid confing human-friendly error should be printed in stderr and the process should exit with non-zero status code.
   // If any option is duplicated (i.e. bash $ node my_ciphering_cli -c C1-C1-A-R0 -c C0) then human-friendly error should be printed in stderr and the process should exit with non-zero status code.
   // If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
-
   const allowedFlags = [
     '-c', '--config', // a config for ciphers
     '-i', '--input', // a path to input file
@@ -110,19 +103,20 @@ function outputResult() {
 function processAtbashCipher(text) {
   return text.split('')
     .map(l => {
+      const charCode = l.charCodeAt();
+      const baseCode = (l === l.toUpperCase()) ? 65 : 97;
       return !isEnglishLetter(l) ? l
-        : l === l.toUpperCase() ?
-          alphabetUpper[alphabetUpperReversed.indexOf(l)]
-          : alphabet[alphabetReversed.indexOf(l)];
+        : String.fromCharCode(25 - (charCode - baseCode) + baseCode);
     })
     .join('');
 }
 
 function processROTN(text, shiftN, isEncoding = true) {
   const shift = isEncoding ? shiftN : -shiftN;
+  const correlatedShift = shift < 0 ? shift + 26 : shift; // Loop shift when below 0
+
   return text.split('')
-    .map(l => !isEnglishLetter(l) ? l
-      : shiftAlphabetLetter((l === l.toUpperCase() ? alphabetUpper : alphabet), l, shift))
+    .map(l => !isEnglishLetter(l) ? l : shiftLetter(l, correlatedShift))
     .join('');
 }
 
@@ -130,9 +124,8 @@ function isEnglishLetter(char) {
   return char && char.length === 1 && /[a-z]/i.test(char);
 }
 
-function shiftAlphabetLetter(alphabet, letter, shift) {
-  if (shift < 0) {
-    return shiftAlphabetLetter(alphabet, letter, shift + 26);
-  }
-  return alphabet[(alphabet.indexOf(letter) + shift) % 26];
+function shiftLetter(l, shift) {
+  const charCode = l.charCodeAt();
+  const baseCode = (l === l.toUpperCase()) ? 65 : 97;
+  return String.fromCharCode(((charCode - baseCode + shift) % 26) + baseCode);
 }
