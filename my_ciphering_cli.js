@@ -1,18 +1,29 @@
-// Using streams for reading, writing and transformation of text is mandatory.
-// Each cipher is implemented in the form of a transform stream.
-// Streams are piped inside each other according to config (you can use .pipe streams instances method or pipeline)
 const fs = require('fs');
+const process = require('process');
 const path = require('path');
-const readline = require('readline');
+const { pipeline } = require('stream');
 
-const cipher = require('./cipher');
+const { getROTNCipherTransform, getAtbashCipherTransform} = require('./cipher');
 
 const args = getArgs();
 const cipherQueue = (args['-c'] || args['--config']).split('-');
-let text;
 
 validateArgs();
-processText();
+
+const inputStream = getInputStream();
+const transformStreams = getTransformCiphers();
+const outputStream = getOutputStream();
+
+pipeline(
+  inputStream,
+  ...transformStreams,
+  outputStream,
+  (err) => {
+    if (err) {
+      console.error('Pipeline failed', err);
+    }
+  }
+);
 
 function getArgs () {
   const args = {}
@@ -50,55 +61,56 @@ function validateArgs() {
   }
 }
 
-function processText() {
-  if (args.hasOwnProperty('-i') || args.hasOwnProperty('--input')) {
-    const inputFileName = args['-i'] || args['--input'];
-    const inputFilePath = path.join(__dirname, inputFileName);
-
+function getInputStream() {
+  if (isInputFileSpecified()) {
+    const inputFilePath = getInputFilePath();
     // TODO: If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
-    fs.readFile(inputFilePath, 'utf-8', (err, content) => {
-      text = content;
-      applyCiphers()
-      outputResult();
-    });
-  } else { // If the input file option is missed - use stdin as an input source.
-    const rl = readline.createInterface(({
-      input: process.stdin, // the readable stream to listen to (Required).
-      output: process.stdout, //  the writable stream to write readline data to (Optional).
-      terminal: false // pass true if the input and output streams should be treated like a TTY, and have ANSI/VT100 escape codes written to it. Defaults to checking isTTY on the output stream upon instantiation.
-    }));
-
-    rl.question('What text would you like to process?\n', line => {
-      text = line;
-      applyCiphers()
-      outputResult();
-      rl.close();
-    });
+    return fs.createReadStream(inputFilePath);
+  } else {
+    return process.stdin;
   }
 }
 
-function applyCiphers() {
+function isInputFileSpecified() {
+  return args.hasOwnProperty('-i') || args.hasOwnProperty('--input');
+}
+
+function getInputFilePath() {
+  const inputFileName = args['-i'] || args['--input'];
+  return path.join(__dirname, inputFileName);
+}
+
+function getTransformCiphers() {
+  const streams = [];
+
   cipherQueue.forEach(cipherMode => {
     if (cipherMode[0] === 'A') {
-      text = cipher.processAtbashCipher(text);
+      streams.push(getAtbashCipherTransform());
     } else if (cipherMode[0].startsWith('C')) {
-      text = cipher.processROTN(text, 1, cipherMode[1] === '1')
+      streams.push(getROTNCipherTransform(1, cipherMode[1] === '1'));
     } else if (cipherMode[0].startsWith('R')) {
-      text = cipher.processROTN(text, 8, cipherMode[1] === '1')
+      streams.push(getROTNCipherTransform(8, cipherMode[1] === '1'));
     }
   });
+  return streams;
 }
 
-function outputResult() {
-  if (args.hasOwnProperty('-o') || args.hasOwnProperty('--output')) {
-    const outputFileName = args['-o'] || args['--output'];
-    const outputFilePath = path.join(__dirname, outputFileName);
-
-    // TODO: If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
-    fs.writeFile(outputFilePath, text, err => {
-      console.log('Successfully wrote to the file.')
-    });
-  } else { // If the output file option is missed - use stdout as an output destination.
-    process.stdout.write(`The result of processing: ${text}\n`);
+function getOutputStream() {
+  if (isOutputFileSpecified()) {
+    const outputFilePath = getOutputFilePath();
+    // TODO: If the output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory)
+    // human-friendly error should be printed in stderr and the process should exit with non-zero status code.
+    return fs.createWriteStream(outputFilePath, { flags: 'a' });
+  } else {
+    return process.stdout;
   }
+}
+
+function isOutputFileSpecified() {
+  return args.hasOwnProperty('-o') || args.hasOwnProperty('--output');
+}
+
+function getOutputFilePath() {
+  const outputFileName = args['-o'] || args['--output'];
+  return path.join(__dirname, outputFileName);
 }

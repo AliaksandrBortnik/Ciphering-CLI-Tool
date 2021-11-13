@@ -1,4 +1,20 @@
-exports.processAtbashCipher = (text) => {
+const { Transform } = require("stream");
+
+exports.getROTNCipherTransform = (shiftN, isEncoding) => new Transform({
+  transform(chunk, encoding, callback) {
+    console.log('getROTNCipherTransform', shiftN)
+    callback(null, processROTN(chunk.toString(), shiftN, isEncoding));
+  }
+});
+
+exports.getAtbashCipherTransform = () => new Transform({
+  transform(chunk, encoding, callback) {
+    console.log('atbashCipherTransform')
+    callback(null, processAtbashCipher(chunk.toString()));
+  }
+});
+
+function processAtbashCipher(text) {
   return text.split('')
     .map(l => {
       if (!isEnglishLetter(l)) {
@@ -11,7 +27,7 @@ exports.processAtbashCipher = (text) => {
     .join('');
 }
 
-exports.processROTN = (text, shiftN, isEncoding) => {
+function processROTN(text, shiftN, isEncoding) {
   const shift = isEncoding ? shiftN : -shiftN;
   const correlatedShift = shift < 0 ? shift + 26 : shift; // Loop shift when below 0
 
