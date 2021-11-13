@@ -2,13 +2,13 @@ const fs = require('fs');
 const process = require('process');
 const path = require('path');
 const { pipeline } = require('stream');
-
-const { getROTNCipherTransform, getAtbashCipherTransform} = require('./cipher');
+const AtbashTransform = require('./Transforms/atbash-transform');
+const RotNTransform = require('./Transforms/rotn-transform');
 
 const args = getArgs();
-const cipherQueue = (args['-c'] || args['--config']).split('-');
-
 validateArgs();
+
+const cipherQueue = (args['-c'] || args['--config']).split('-');
 
 const inputStream = getInputStream();
 const transformStreams = getTransformCiphers();
@@ -20,7 +20,7 @@ pipeline(
   outputStream,
   (err) => {
     if (err) {
-      console.error('Pipeline failed', err);
+      console.error('Ooops. Faced an issue', err);
     }
   }
 );
@@ -39,12 +39,12 @@ function getArgs () {
 }
 
 function validateArgs() {
-  // Config option is required and should be validated. In case of invalid confing human-friendly error should be printed in stderr and the process should exit with non-zero status code.
+  // Config option is required and should be validated. In case of invalid config human-friendly error should be printed in stderr and the process should exit with non-zero status code.
   // If any option is duplicated (i.e. bash $ node my_ciphering_cli -c C1-C1-A-R0 -c C0) then human-friendly error should be printed in stderr and the process should exit with non-zero status code.
   const allowedFlags = [
-    '-c', '--config', // a config for ciphers
-    '-i', '--input', // a path to input file
-    '-o', '--output' // a path to output file
+    '-c', '--config',
+    '-i', '--input',
+    '-o', '--output'
   ];
 
   if (!args.hasOwnProperty('-c') && !args.hasOwnProperty('--config')) {
@@ -56,18 +56,46 @@ function validateArgs() {
   } else if (Object.keys(args).some(x => !allowedFlags.includes(x))) {
     console.error('Wrong passed argument!');
     throw Error('Wrong passed argument!');
-  } else {
-    //console.log('All args look good.')
   }
 }
+
+function getTransformCiphers() {
+  const streams = [];
+
+  cipherQueue.forEach(cipherMode => {
+    if (cipherMode[0] === 'A') {
+      streams.push(new AtbashTransform());
+    } else if (cipherMode[0].startsWith('C')) {
+      streams.push(new RotNTransform(1, cipherMode[1] === '1'));
+    } else if (cipherMode[0].startsWith('R')) {
+      streams.push(new RotNTransform(8, cipherMode[1] === '1'));
+    }
+  });
+  return streams;
+}
+
+
+
 
 function getInputStream() {
   if (isInputFileSpecified()) {
     const inputFilePath = getInputFilePath();
-    // TODO: If the input and/or output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr and the process should exit with non-zero status code.
+    checkFileAccessibleToRead(inputFilePath);
     return fs.createReadStream(inputFilePath);
   } else {
     return process.stdin;
+  }
+}
+
+function checkFileAccessibleToRead(filePath) {
+  // If the input file is given but doesn't exist or you can't access it
+  // (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr
+  // and the process should exit with non-zero status code.
+  try {
+    fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK)
+  } catch (err) {
+    process.stderr.write(`No permission to read or file is not found: ${filePath}`);
+    process.exit(1);
   }
 }
 
@@ -80,29 +108,39 @@ function getInputFilePath() {
   return path.join(__dirname, inputFileName);
 }
 
-function getTransformCiphers() {
-  const streams = [];
 
-  cipherQueue.forEach(cipherMode => {
-    if (cipherMode[0] === 'A') {
-      streams.push(getAtbashCipherTransform());
-    } else if (cipherMode[0].startsWith('C')) {
-      streams.push(getROTNCipherTransform(1, cipherMode[1] === '1'));
-    } else if (cipherMode[0].startsWith('R')) {
-      streams.push(getROTNCipherTransform(8, cipherMode[1] === '1'));
-    }
-  });
-  return streams;
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 function getOutputStream() {
   if (isOutputFileSpecified()) {
     const outputFilePath = getOutputFilePath();
-    // TODO: If the output file is given but doesn't exist or you can't access it (e.g. because of permissions or it's a directory)
-    // human-friendly error should be printed in stderr and the process should exit with non-zero status code.
+    checkFileAccessibleToWrite(outputFilePath);
     return fs.createWriteStream(outputFilePath, { flags: 'a' });
   } else {
     return process.stdout;
+  }
+}
+
+function checkFileAccessibleToWrite(filePath) {
+  // If the output file is given but doesn't exist or you can't access it
+  // (e.g. because of permissions or it's a directory) - human-friendly error should be printed in stderr
+  // and the process should exit with non-zero status code.
+  try {
+    fs.accessSync(filePath, fs.constants.F_OK | fs.constants.W_OK)
+  } catch (err) {
+    process.stderr.write(`No permission to write or file is not found: ${filePath}`);
+    process.exit(1);
   }
 }
 
