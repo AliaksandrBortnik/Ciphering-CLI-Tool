@@ -26,9 +26,9 @@ try {
   );
 } catch (err) {
   if (err instanceof ValidationError) {
-    process.stderr.write(`Validation error: ${err.message}`);
+    process.stderr.write(`Validation error: ${err.message}\n`);
   } else if (err instanceof FileAccessError) {
-    process.stderr.write(`File error: ${err.message}`);
+    process.stderr.write(`File error: ${err.message}\n`);
   } else {
     process.stderr.write(err.message);
   }

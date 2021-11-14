@@ -59,14 +59,14 @@ function isValidConfig(args) {
 
 function validateArgs(args) {
   if (!hasConfigFlag(args)) {
-    throw new ValidationError('Config argument is required!');
+    throw new ValidationError('Config argument is required.');
   } else if (!isAllFlagsWithValue(args)) {
-    throw new ValidationError('Wrong number of arguments!');
+    throw new ValidationError('Wrong number of arguments.');
   } else if (hasUnknownFlags(args)) {
-    throw new ValidationError('Unknown passed argument!');
+    throw new ValidationError('Unknown argument has been found.');
   } else if (hasArgumentDuplicate(args)) {
-    throw new ValidationError('Duplicate argument has been detected!');
+    throw new ValidationError('Duplicate argument has been detected.');
   } else if (!isValidConfig(args)) {
-    throw new ValidationError('Invalid config. Format must be {XY(-)}n!');
+    throw new ValidationError('Invalid config. Format must be {XY(-)}n.');
   }
 }
