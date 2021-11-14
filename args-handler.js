@@ -1,4 +1,5 @@
 const process = require('process');
+const ValidationError = require('./Errors/validation-error');
 
 const FLAG_ALIAS_GROUPS = [
   ['-c', '--config'],
@@ -24,9 +25,7 @@ function splitArgsIntoKeyValue(argv) {
   const args = {};
 
   for (let i = 0; i < argv.length; i += 2) {
-    let argFlag = argv[i];
-    let argValue = argv[i + 1];
-    args[argFlag] = argValue;
+    args[argv[i]] = argv[i + 1];
   }
 
   return args;
@@ -55,30 +54,19 @@ function hasUnknownFlags(args) {
 function isValidConfig(args) {
   const configValueIndex = args[args.findIndex(a => a === '-c') + 1];
   const ciphers = configValueIndex.split('-');
-
-  if (!ciphers.every(c => ['A', 'C1', 'C0', 'R1', 'R0'].includes(c))) {
-    return false;
-  }
-  return true;
+  return ciphers.every(c => ['A', 'C1', 'C0', 'R1', 'R0'].includes(c));
 }
 
 function validateArgs(args) {
-  let validationMessage = null;
-
   if (!hasConfigFlag(args)) {
-    validationMessage = 'Error: Config argument is required!';
+    throw new ValidationError('Config argument is required!');
   } else if (!isAllFlagsWithValue(args)) {
-    validationMessage = 'Error: Wrong number of arguments!';
+    throw new ValidationError('Wrong number of arguments!');
   } else if (hasUnknownFlags(args)) {
-    validationMessage = 'Error: Unknown passed argument!';
+    throw new ValidationError('Unknown passed argument!');
   } else if (hasArgumentDuplicate(args)) {
-    validationMessage = 'Error: Duplicate argument has been detected!';
+    throw new ValidationError('Duplicate argument has been detected!');
   } else if (!isValidConfig(args)) {
-    validationMessage = 'Error: Invalid config. Format must be {XY(-)}n!';
-  }
-
-  if (validationMessage) {
-    process.stderr.write(validationMessage);
-    process.exit(1);
+    throw new ValidationError('Invalid config. Format must be {XY(-)}n!');
   }
 }

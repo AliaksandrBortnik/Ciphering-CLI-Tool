@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
+const FileAccessError = require('../Errors/file-access-error');
 
 module.exports.getInputStream = (args) => {
   if (isInputFileSpecified(args)) {
@@ -16,8 +17,7 @@ function checkFileAccessibleToRead(filePath) {
   try {
     fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK)
   } catch (err) {
-    process.stderr.write(`No permission to read or file is not found: ${filePath}`);
-    process.exit(1);
+    throw new FileAccessError(`No permission to read or file is not found: ${filePath}`);
   }
 }
 
