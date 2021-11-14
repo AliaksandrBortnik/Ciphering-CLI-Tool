@@ -22,10 +22,9 @@ function checkFileAccessibleToRead(filePath) {
 }
 
 function isInputFileSpecified(args) {
-  return args.hasOwnProperty('-i') || args.hasOwnProperty('--input');
+  return args.hasOwnProperty('-i');
 }
 
 function getInputFilePath(args) {
-  const inputFileName = args['-i'] || args['--input'];
-  return path.join(__dirname, '..', inputFileName);
+  return path.join(__dirname, '..', args['-i']);
 }

@@ -18,5 +18,5 @@ module.exports.getTransformCiphers = (args) => {
 }
 
 function parseCipherQueue(args) {
-  return (args['-c'] || args['--config']).split('-');
+  return args['-c'].split('-');
 }

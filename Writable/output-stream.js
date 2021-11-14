@@ -22,10 +22,9 @@ function checkFileAccessibleToWrite(filePath) {
 }
 
 function isOutputFileSpecified(args) {
-  return args.hasOwnProperty('-o') || args.hasOwnProperty('--output');
+  return args.hasOwnProperty('-o');
 }
 
 function getOutputFilePath(args) {
-  const outputFileName = args['-o'] || args['--output'];
-  return path.join(__dirname, '..', outputFileName);
+  return path.join(__dirname, '..', args['-o']);
 }

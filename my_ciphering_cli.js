@@ -2,12 +2,10 @@ const process = require('process');
 const { pipeline } = require('stream');
 const { getInputStream } = require('./Readable/input-stream');
 const { getOutputStream } = require('./Writable/output-stream');
-const { parseArgs, validateArgs } = require('./args-handler');
+const { parseArgs } = require('./args-handler');
 const { getTransformCiphers } = require('./Transforms/transform-builder');
 
 const args = parseArgs();
-validateArgs(args);
-
 const inputStream = getInputStream(args);
 const transformStreams = getTransformCiphers(args);
 const outputStream = getOutputStream(args);
