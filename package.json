@@ -4,7 +4,8 @@
   "description": "Ciphering CLI tool",
   "main": "my_ciphering_cli.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -20,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/AliaksandrBortnik/NodeJS-rss/issues"
   },
-  "homepage": "https://github.com/AliaksandrBortnik/NodeJS-rss#readme"
+  "homepage": "https://github.com/AliaksandrBortnik/NodeJS-rss#readme",
+  "devDependencies": {
+    "jest": "^27.3.1"
+  }
 }
