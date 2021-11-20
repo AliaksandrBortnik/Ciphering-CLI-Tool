@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
-const FileAccessError = require('../Errors/file-access-error');
+const FileAccessError = require('../errors/file-access-error');
 
 module.exports.getInputStream = (args) => {
   if (isInputFileSpecified(args)) {

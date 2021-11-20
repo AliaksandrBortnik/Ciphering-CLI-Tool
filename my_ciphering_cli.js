@@ -1,14 +1,15 @@
 const process = require('process');
 const { pipeline } = require('stream');
-const { getInputStream } = require('./Readable/input-stream');
-const { getOutputStream } = require('./Writable/output-stream');
+const { getInputStream } = require('./readable/input-stream');
+const { getOutputStream } = require('./writable/output-stream');
 const { parseArgs } = require('./args-handler');
-const { getTransformCiphers } = require('./Transforms/transform-builder');
-const ValidationError = require('./Errors/validation-error');
-const FileAccessError = require('./Errors/file-access-error');
+const { getTransformCiphers } = require('./transforms/transform-builder');
+const ValidationError = require('./errors/validation-error');
+const FileAccessError = require('./errors/file-access-error');
 
 try {
-  const args = parseArgs();
+  const rawArgs = process.argv.slice(2);
+  const args = parseArgs(rawArgs);
   const inputStream = getInputStream(args);
   const transformStreams = getTransformCiphers(args);
   const outputStream = getOutputStream(args);
