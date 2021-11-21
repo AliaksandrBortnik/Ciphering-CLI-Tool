@@ -1,4 +1,4 @@
-const { isEnglishLetter, shiftLetter} = require('./alphabet-helpers');
+const { isEnglishLetter, shiftLetter} = require('../alphabet-helper');
 
 describe('Alphabet helpers', () => {
   test('A should be English alphabet letter', () => {

@@ -17,7 +17,7 @@ function checkFileAccessibleToWrite(filePath) {
   try {
     fs.accessSync(filePath, fs.constants.F_OK | fs.constants.W_OK)
   } catch (err) {
-    throw new FileAccessError(`No permission to write or file is not found: ${filePath}`);
+    throw new FileAccessError(`No permission to write or file is not found.`);
   }
 }
 

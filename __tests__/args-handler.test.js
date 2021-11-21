@@ -1,5 +1,5 @@
-const {parseArgs} = require("./args-handler");
-const ValidationError = require("./errors/validation-error");
+const { parseArgs } = require("../args-handler");
+const ValidationError = require("../errors/validation-error");
 
 describe('Arg parsing with validation', function () {
   test('-c "A" should be parsed well', () => {

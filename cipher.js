@@ -1,4 +1,4 @@
-const { isEnglishLetter, shiftLetter } = require('./alphabet-helpers');
+const { isEnglishLetter, shiftLetter } = require('./alphabet-helper');
 
 class Cipher {
   static processROTN(text, shiftN, isEncoding) {

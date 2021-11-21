@@ -1,4 +1,4 @@
-const Cipher = require('./cipher');
+const Cipher = require('../cipher');
 
 describe('Ciphers in action', () => {
   test('should process Atbash cipher correctly', () => {
@@ -26,8 +26,8 @@ describe('Ciphers in action', () => {
   });
 
   test('should encode ROT8 cipher correctly', () => {
-    const sourceText = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+    const sourceText = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry';
     const result = Cipher.processROTN(sourceText, 8, true);
-    expect(result).toBe('Twzmu Qxacu qa aquxtg lcuug bmfb wn bpm xzqvbqvo ivl bgxmambbqvo qvlcabzg.');
+    expect(result).toBe('Twzmu Qxacu qa aquxtg lcuug bmfb wn bpm xzqvbqvo ivl bgxmambbqvo qvlcabzg');
   });
 });

@@ -17,7 +17,7 @@ function checkFileAccessibleToRead(filePath) {
   try {
     fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK)
   } catch (err) {
-    throw new FileAccessError(`No permission to read or file is not found: ${filePath}`);
+    throw new FileAccessError(`No permission to read or file is not found.`);
   }
 }
 
