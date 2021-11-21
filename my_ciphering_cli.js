@@ -3,7 +3,7 @@ const { pipeline } = require('stream');
 const { getInputStream } = require('./readable/input-stream');
 const { getOutputStream } = require('./writable/output-stream');
 const { parseArgs } = require('./args-handler');
-const { getTransformCiphers } = require('./transforms/transform-builder');
+const getTransformCiphers = require('./transforms/transform-builder');
 const ValidationError = require('./errors/validation-error');
 const FileAccessError = require('./errors/file-access-error');
 
