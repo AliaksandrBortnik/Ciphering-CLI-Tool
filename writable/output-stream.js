@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const process = require('process');
-const FileAccessError = require('../Errors/file-access-error');
+const FileAccessError = require('../errors/file-access-error');
 
 module.exports.getOutputStream = (args) => {
   if (isOutputFileSpecified(args)) {
@@ -17,7 +17,7 @@ function checkFileAccessibleToWrite(filePath) {
   try {
     fs.accessSync(filePath, fs.constants.F_OK | fs.constants.W_OK)
   } catch (err) {
-    throw new FileAccessError(`No permission to write or file is not found: ${filePath}`);
+    throw new FileAccessError(`No permission to write or file is not found.`);
   }
 }
 

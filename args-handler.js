@@ -1,5 +1,4 @@
-const process = require('process');
-const ValidationError = require('./Errors/validation-error');
+const ValidationError = require('./errors/validation-error');
 
 const FLAG_ALIAS_GROUPS = [
   ['-c', '--config'],
@@ -7,8 +6,7 @@ const FLAG_ALIAS_GROUPS = [
   ['-o', '--output']
 ];
 
-module.exports.parseArgs = () => {
-  let argv = process.argv.slice(2);
+module.exports.parseArgs = (argv) => {
   argv = unifyFlags(argv);
   validateArgs(argv);
   return splitArgsIntoKeyValue(argv);

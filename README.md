@@ -18,6 +18,16 @@ For example, config `"C1-C1-R0-A"` means "encode by Caesar cipher => encode by C
 
 To stop using stdin/stdout, use Ctrl+C.
 
+**To run tests:**
+```bash
+npm run test
+```
+
+**To get tests code coverage:**
+```bash
+npm run test:coverage
+```
+
 **Usage example:**
 
 ```bash

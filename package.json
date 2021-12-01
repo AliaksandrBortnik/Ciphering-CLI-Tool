@@ -1,0 +1,28 @@
+{
+  "name": "ciphering-cli-tool",
+  "version": "1.0.0",
+  "description": "Ciphering CLI tool",
+  "main": "my_ciphering_cli.js",
+  "scripts": {
+    "test": "jest --verbose",
+    "test:coverage": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AliaksandrBortnik/NodeJS-rss.git"
+  },
+  "keywords": [
+    "cipher",
+    "cli",
+    "nodejs"
+  ],
+  "author": "Alex Bortnik",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AliaksandrBortnik/NodeJS-rss/issues"
+  },
+  "homepage": "https://github.com/AliaksandrBortnik/NodeJS-rss#readme",
+  "devDependencies": {
+    "jest": "^27.3.1"
+  }
+}

@@ -1,7 +1,8 @@
 const AtbashTransform = require('./atbash-transform');
 const RotNTransform = require('./rotn-transform');
+const parseCipherQueue = require('./parse-cipher-queue');
 
-module.exports.getTransformCiphers = (args) => {
+module.exports = (args) => {
   const streams = [];
   const cipherQueue = parseCipherQueue(args);
 
@@ -15,8 +16,4 @@ module.exports.getTransformCiphers = (args) => {
     }
   });
   return streams;
-}
-
-function parseCipherQueue(args) {
-  return args['-c'].split('-');
 }
